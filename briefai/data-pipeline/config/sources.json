@@ -1,0 +1,24 @@
+﻿{
+  "sources": [
+    {
+      "name": "TechCrunch",
+      "url": "https://techcrunch.com/feed/",
+      "category": "Tecnologia"
+    },
+    {
+      "name": "Ansa Tech",
+      "url": "https://www.ansa.it/sito/ansait_rss.xml",
+      "category": "Generale"
+    },
+    {
+      "name": "The Verge",
+      "url": "https://www.theverge.com/rss/index.xml",
+      "category": "Tecnologia"
+    },
+    {
+      "name": "BBC Business",
+      "url": "https://feeds.bbci.co.uk/news/business/rss.xml",
+      "category": "Economia"
+    }
+  ]
+}
