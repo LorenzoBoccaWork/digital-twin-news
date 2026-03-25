@@ -1,0 +1,13 @@
+﻿{
+  "name": "data-pipeline",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/pipeline.js",
+  "scripts": {
+    "start": "node src/pipeline.js",
+    "test": "node src/pipeline.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
