@@ -1,0 +1,20 @@
+Sei un sistema di analisi notizie. Analizza il seguente articolo e restituisci SOLO un oggetto JSON valido, senza testo aggiuntivo, senza markdown, senza backtick.
+
+Articolo:
+Titolo: {title}
+Contenuto: {content}
+
+Restituisci esattamente questo formato JSON:
+{
+  "content_summary": "riassunto in massimo 50 parole",
+  "sentiment": "Positive" oppure "Neutral" oppure "Negative",
+  "entities": ["entità1", "entità2", "entità3"],
+  "trending_topics": ["topic1", "topic2"]
+}
+
+Regole:
+- content_summary: massimo 50 parole, in italiano
+- sentiment: SOLO uno tra Positive, Neutral, Negative
+- entities: massimo 5 entità (persone, aziende, luoghi, prodotti)
+- trending_topics: massimo 3 topic principali
+- Rispondi SOLO con il JSON, nessun altro testo

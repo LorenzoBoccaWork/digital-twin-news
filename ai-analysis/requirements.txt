@@ -1,0 +1,6 @@
+anthropic==0.25.0
+pymongo==4.6.0
+python-dotenv==1.0.0
+redis==5.0.1
+schedule==1.2.1
+nltk==3.8.1
