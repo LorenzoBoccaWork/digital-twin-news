@@ -24,11 +24,13 @@ app.use('/api/stats', statsRoutes);
 
 app.get('/health', (req, res) => res.json({ status: 'ok', timestamp: new Date().toISOString() }));
 
+const PORT = process.env.PORT || 3000;
+
 mongoose.connect(process.env.MONGO_URI)
   .then(() => {
     console.log('Connesso a MongoDB');
-    app.listen(process.env.PORT, () => {
-      console.log(`Backend attivo su http://localhost:${process.env.PORT}`);
+    app.listen(PORT, () => {
+      console.log(`Backend attivo su http://localhost:${PORT}`);
     });
   })
   .catch(err => {

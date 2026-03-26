@@ -23,16 +23,6 @@ router.get('/', auth, async (req, res) => {
   }
 });
 
-router.get('/:id', auth, async (req, res) => {
-  try {
-    const article = await Article.findOne({ article_id: req.params.id });
-    if (!article) return res.status(404).json({ error: 'Articolo non trovato.' });
-    res.json(article);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
-
 router.get('/relevant/:company_id', auth, async (req, res) => {
   try {
     const { company_id } = req.params;
@@ -48,6 +38,16 @@ router.get('/relevant/:company_id', auth, async (req, res) => {
     });
 
     res.json({ articles: relevant, total: relevant.length });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+router.get('/:id', auth, async (req, res) => {
+  try {
+    const article = await Article.findOne({ article_id: req.params.id });
+    if (!article) return res.status(404).json({ error: 'Articolo non trovato.' });
+    res.json(article);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
