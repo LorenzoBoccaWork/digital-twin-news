@@ -6,9 +6,10 @@ const auth = require('../middleware/auth');
 function computeRelevance(feedbackHistory) {
   const preferences = {};
   for (const fb of feedbackHistory) {
-    if (!fb.category) continue;
+    const category = fb.category;
+    if (!category) continue;
     const weight = fb.interested ? 1 : -0.5;
-    preferences[fb.category] = (preferences[fb.category] || 0) + weight;
+    preferences[category] = (preferences[category] || 0) + weight;
   }
   const maxVal = Math.max(...Object.values(preferences), 1);
   for (const k in preferences) {
@@ -16,7 +17,6 @@ function computeRelevance(feedbackHistory) {
   }
   return preferences;
 }
-
 router.get('/', auth, async (req, res) => {
   try {
     const companies = await Company.find({});

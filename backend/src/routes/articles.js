@@ -7,16 +7,19 @@ const auth = require('../middleware/auth');
 router.get('/relevant/:company_id', auth, async (req, res) => {
   try {
     const { company_id } = req.params;
-    const articles = await Article.find({}).sort({ timestamp: -1 }).limit(200);
+    const articles = await Article.find({})
+      .sort({ timestamp: -1 })
+      .limit(200);
+
     const relevant = articles
       .filter(a => (a.company_relevance?.[company_id] || 0) > 0.5)
       .sort((a, b) => (b.company_relevance?.[company_id] || 0) - (a.company_relevance?.[company_id] || 0));
+
     res.json({ articles: relevant, total: relevant.length });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
-
 router.get('/', auth, async (req, res) => {
   try {
     const { category, sentiment, source, limit = 50, page = 1 } = req.query;
