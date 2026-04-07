@@ -1,50 +1,81 @@
 const express = require('express');
-const router = express.Router();
 const Article = require('../models/Article');
 const auth = require('../middleware/auth');
 
-// ⚠️ PRIMA la route specifica, poi quella generica /:id
-router.get('/relevant/:company_id', auth, async (req, res) => {
-  try {
-    const { company_id } = req.params;
-    const articles = await Article.find({})
-      .sort({ timestamp: -1 })
-      .limit(200);
+const router = express.Router();
 
-    const relevant = articles
-      .filter(a => (a.company_relevance?.[company_id] || 0) > 0.5)
-      .sort((a, b) => (b.company_relevance?.[company_id] || 0) - (a.company_relevance?.[company_id] || 0));
-
-    res.json({ articles: relevant, total: relevant.length });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
 router.get('/', auth, async (req, res) => {
   try {
-    const { category, sentiment, source, limit = 50, page = 1 } = req.query;
-    const filter = {};
+    const {
+      category,
+      sentiment,
+      source,
+      status = 'processed',
+      limit = 50,
+      page = 1,
+      search,
+    } = req.query;
+
+    const filter = { status };
+
     if (category) filter.category = category;
     if (sentiment) filter.sentiment = sentiment;
     if (source) filter.source = source;
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { summary: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const parsedLimit = Number.parseInt(limit, 10) || 50;
+    const parsedPage = Number.parseInt(page, 10) || 1;
+
     const articles = await Article.find(filter)
-      .sort({ timestamp: -1 })
-      .limit(parseInt(limit))
-      .skip((parseInt(page) - 1) * parseInt(limit));
+      .sort({ pubDate: -1 })
+      .limit(parsedLimit)
+      .skip((parsedPage - 1) * parsedLimit)
+      .select('-__v');
+
     const total = await Article.countDocuments(filter);
-    res.json({ articles, total, page: parseInt(page) });
+
+    return res.json({
+      success: true,
+      articles,
+      total,
+      page: parsedPage,
+      limit: parsedLimit,
+      totalPages: Math.ceil(total / parsedLimit),
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[Articles List Error]', err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 
-router.get('/:id', auth, async (req, res) => {
+router.get('/:uniqueKey', auth, async (req, res) => {
   try {
-    const article = await Article.findOne({ article_id: req.params.id });
-    if (!article) return res.status(404).json({ error: 'Articolo non trovato.' });
-    res.json(article);
+    const article = await Article.findOne({ uniqueKey: req.params.uniqueKey });
+
+    if (!article) {
+      return res.status(404).json({
+        success: false,
+        error: 'Articolo non trovato.',
+      });
+    }
+
+    return res.json({
+      success: true,
+      article,
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 

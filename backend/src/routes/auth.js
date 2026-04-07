@@ -1,35 +1,135 @@
 const express = require('express');
-const router = express.Router();
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const auth = require('../middleware/auth');
+
 require('dotenv').config();
+
+const router = express.Router();
 
 router.post('/register', async (req, res) => {
   try {
-    const { username, password, company_id } = req.body;
-    const user = new User({ username, password, company_id });
+    const { email, password, username } = req.body;
+
+    if (!email || !password || !username) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email, password e username sono obbligatori.',
+      });
+    }
+
+    const existingUser = await User.findOne({
+      $or: [{ email }, { username }],
+    });
+
+    if (existingUser) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email o username gia registrati.',
+      });
+    }
+
+    const userId = `user_${Date.now()}_${Math.random().toString(36).slice(2, 11)}`;
+
+    const user = new User({
+      userId,
+      email,
+      password,
+      username,
+      categories: ['tech', 'news', 'general'],
+      keywords: [],
+      sentimentPreference: 'all',
+    });
+
     await user.save();
-    res.status(201).json({ message: 'Utente registrato con successo.' });
+
+    return res.status(201).json({
+      success: true,
+      message: 'Utente registrato con successo.',
+      userId: user.userId,
+    });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error('[Auth Register Error]', err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 
 router.post('/login', async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
-    if (!user) return res.status(404).json({ error: 'Utente non trovato.' });
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: 'Email e password sono obbligatori.',
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'Utente non trovato.',
+      });
+    }
+
     const valid = await user.comparePassword(password);
-    if (!valid) return res.status(401).json({ error: 'Password errata.' });
+    if (!valid) {
+      return res.status(401).json({
+        success: false,
+        error: 'Password errata.',
+      });
+    }
+
     const token = jwt.sign(
-      { userId: user._id, company_id: user.company_id, role: user.role },
+      {
+        userId: user.userId,
+        email: user.email,
+        role: user.role,
+      },
       process.env.JWT_SECRET,
       { expiresIn: '24h' }
     );
-    res.json({ token, company_id: user.company_id });
+
+    return res.json({
+      success: true,
+      token,
+      userId: user.userId,
+      username: user.username,
+      email: user.email,
+    });
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('[Auth Login Error]', err);
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
+  }
+});
+
+router.get('/me', auth, async (req, res) => {
+  try {
+    const user = await User.findOne({ userId: req.user.userId }).select('-password');
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: 'Utente non trovato.',
+      });
+    }
+
+    return res.json({
+      success: true,
+      user,
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      error: err.message,
+    });
   }
 });
 
