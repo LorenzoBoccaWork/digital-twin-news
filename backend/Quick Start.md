@@ -177,7 +177,3 @@ Usa il file `backend/docs/backend.md` per tutti i dettagli su:
 - Error handling
 - Security best practices
 - Limiti e considerazioni
-
----
-
-**Backend v1.0 - Pronto per produzione con n8n integration compatibility.**
