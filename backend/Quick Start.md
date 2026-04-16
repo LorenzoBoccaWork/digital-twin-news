@@ -166,14 +166,3 @@ backend/
 ### Errore: "Port already in use"
 - Cambia PORT in `.env` (es. 3001)
 - O uccidi il processo: `lsof -ti:3000 | xargs kill -9`
-
----
-
-## Test Completo
-
-Usa il file `backend/docs/backend.md` per tutti i dettagli su:
-- Endpoint API completi
-- Schema Mongoose
-- Error handling
-- Security best practices
-- Limiti e considerazioni
